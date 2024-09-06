@@ -109,10 +109,12 @@ Este projeto é um aplicativo de gerenciamento de uma biblioteca pessoal, desenv
 - O status do livro pode ser definido como "Lido" ou "Lendo", conforme o andamento da leitura.
 ## Print da Tela
 
-- Tela 
-
+- Tela
+![print da tela](https://github.com/user-attachments/assets/c14c995b-6a37-46db-bd23-b2631dd3af52)
 
 - Lista
+![lista](https://github.com/user-attachments/assets/829b0358-47c1-4a31-a123-6c0956419385)
+
 
 
 ## Autores
