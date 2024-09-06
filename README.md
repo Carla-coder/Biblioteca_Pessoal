@@ -43,7 +43,7 @@ Este projeto é um aplicativo de gerenciamento de uma biblioteca pessoal, desenv
 1. Clone este repositório:
 
 ```bash
- git clone https://github.com/seu-usuario/books.git
+ git clone https://github.com/seu-usuario/Biblioteca_Pessoal.git
 
 ```
 
@@ -110,9 +110,11 @@ Este projeto é um aplicativo de gerenciamento de uma biblioteca pessoal, desenv
 ## Print da Tela
 
 - Tela
+ 
 ![print da tela](https://github.com/user-attachments/assets/c14c995b-6a37-46db-bd23-b2631dd3af52)
 
 - Lista
+ 
 ![lista](https://github.com/user-attachments/assets/829b0358-47c1-4a31-a123-6c0956419385)
 
 
