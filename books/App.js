@@ -32,7 +32,7 @@ export default function App() {
   const [editoraLivro, setEditoraLivro] = useState("");
   const [anoLivro, setAnoLivro] = useState("");
   const [imagemLivro, setImagemLivro] = useState(null);
-  const [flagLivro, setFlagLivro] = useState("Lendo"); // "Lido" ou "Lendo"
+  const [flagLivro, setFlagLivro] = useState(""); // "Lido" ou "Lendo"
   const [livros, setLivros] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingLivroId, setEditingLivroId] = useState(null);
@@ -41,53 +41,56 @@ export default function App() {
     fetchLivros();
   }, []);
 
+ 
   const adicionarLivro = async () => {
     try {
-      setLoading(true);
-      let imageUrl = null;
-      if (imagemLivro) {
-        const storageRef = ref(
-          storage,
-          `livros/${Date.now()}-${nomeLivro}.jpg`
-        );
-        const response = await fetch(imagemLivro);
-        const blob = await response.blob();
-        await uploadBytes(storageRef, blob);
-        imageUrl = await getDownloadURL(storageRef);
-      }
+        setLoading(true);
+        let imageUrl = null;
+        
+        // Se uma nova imagem foi selecionada, faça o upload e obtenha a URL
+        if (imagemLivro && !imagemLivro.startsWith('http')) {
+            const storageRef = ref(
+              storage,
+              `livros/${Date.now()}-${nomeLivro}.jpg`
+            );
+            const response = await fetch(imagemLivro);
+            const blob = await response.blob();
+            await uploadBytes(storageRef, blob);
+            imageUrl = await getDownloadURL(storageRef);
+        }
 
-      if (editingLivroId) {
-        // Atualiza o livro no Firebase
-        const livroDoc = doc(db, "livros", editingLivroId);
-        await updateDoc(livroDoc, {
-          nome: nomeLivro,
-          autor: autorLivro,
-          editora: editoraLivro,
-          ano: anoLivro,
-          imagem: imageUrl || imagemLivro,
-          flag: flagLivro,
-        });
-
-        Alert.alert("Livro atualizado com sucesso!");
-      } else {
-        await addDoc(collection(db, "livros"), {
-          nome: nomeLivro,
-          autor: autorLivro,
-          editora: editoraLivro,
-          ano: anoLivro,
-          imagem: imageUrl,
-          flag: flagLivro,
-        });
-        Alert.alert("Livro adicionado com sucesso!");
-      }
-      resetForm();
-      fetchLivros();
+        if (editingLivroId) {
+            // Atualiza o livro no Firebase
+            const livroDoc = doc(db, "livros", editingLivroId);
+            await updateDoc(livroDoc, {
+                nome: nomeLivro,
+                autor: autorLivro,
+                editora: editoraLivro,
+                ano: anoLivro,
+                imagem: imageUrl || imagemLivro, // Use a imagem existente se não tiver uma nova
+                flag: flagLivro,
+            });
+            Alert.alert("Livro atualizado com sucesso!");
+        } else {
+            await addDoc(collection(db, "livros"), {
+                nome: nomeLivro,
+                autor: autorLivro,
+                editora: editoraLivro,
+                ano: anoLivro,
+                imagem: imageUrl,
+                flag: flagLivro,
+            });
+            Alert.alert("Livro adicionado com sucesso!");
+        }
+        
+        resetForm();
+        fetchLivros(); // Atualiza a lista de livros após a edição
     } catch (e) {
-      console.error("Erro ao adicionar/atualizar livro", e);
+        console.error("Erro ao adicionar/atualizar livro", e);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   const fetchLivros = async () => {
     try {
@@ -147,7 +150,7 @@ export default function App() {
     setEditoraLivro("");
     setAnoLivro("");
     setImagemLivro(null);
-    setFlagLivro("Lendo");
+    setFlagLivro("");
     setEditingLivroId(null);
   };
 
@@ -292,7 +295,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 5,
-    color: "#333",
+    color: "#4682b4",
   },
   input: {
     width: "100%",
@@ -359,7 +362,7 @@ const styles = StyleSheet.create({
   bookName: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#333",
+    color: "#4682b4",
   },
   bookAuthor: {
     fontSize: 18,
@@ -375,7 +378,7 @@ const styles = StyleSheet.create({
   },
   bookFlag: {
     fontSize: 16,
-    color: "#777",
+    color: "#ff4500",
   },
   bookActions: {
     justifyContent: "space-around",
@@ -394,267 +397,3 @@ const styles = StyleSheet.create({
   },
 });
 
-// import React, { useState, useEffect } from 'react';
-// import { StyleSheet, Text, View, Button, TextInput, FlatList, TouchableOpacity, Image, ImageBackground } from 'react-native';
-// import { db, storage } from './firebaseconfig';
-// import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-// import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-// import Icon from 'react-native-vector-icons/FontAwesome';
-// import { launchImageLibrary } from 'react-native-image-picker';
-
-// export default function App() {
-//   const [tituloLivro, setTituloLivro] = useState('');
-//   const [autorLivro, setAutorLivro] = useState('');
-//   const [imageUri, setImageUri] = useState(null);
-//   const [livros, setLivros] = useState([]);
-//   const [loading, setLoading] = useState(false);
-//   const [editingLivroId, setEditingLivroId] = useState(null);
-
-//   const selecionarImagem = () => {
-//     launchImageLibrary({ mediaType: 'photo' }, (response) => {
-//       if (response.didCancel) {
-//         console.log('Usuário cancelou o seletor de imagem');
-//       } else if (response.error) {
-//         console.error('Erro no ImagePicker: ', response.error);
-//       } else {
-//         setImageUri(response.assets[0].uri);
-//       }
-//     });
-//   };
-
-//   const uploadImage = async () => {
-//     if (!imageUri) return null;
-
-//     const response = await fetch(imageUri);
-//     const blob = await response.blob();
-//     const filename = imageUri.substring(imageUri.lastIndexOf('/') + 1);
-//     const storageRef = ref(storage, `livros/${filename}`);
-
-//     await uploadBytes(storageRef, blob);
-//     return await getDownloadURL(storageRef);
-//   };
-
-//   const adicionarOuAtualizarLivro = async () => {
-//     try {
-//       setLoading(true);
-//       const imageUrl = await uploadImage();
-
-//       if (editingLivroId) {
-//         const livroRef = doc(db, 'livros', editingLivroId);
-//         await updateDoc(livroRef, {
-//           titulo: tituloLivro,
-//           autor: autorLivro,
-//           imageUrl: imageUrl || null
-//         });
-//         alert('Livro atualizado com sucesso!');
-//         setEditingLivroId(null);
-//       } else {
-//         await addDoc(collection(db, 'livros'), {
-//           titulo: tituloLivro,
-//           autor: autorLivro,
-//           imageUrl: imageUrl || null
-//         });
-//         alert('Livro adicionado com sucesso!');
-//       }
-
-//       setTituloLivro('');
-//       setAutorLivro('');
-//       setImageUri(null);
-//       fetchLivros();
-//     } catch (e) {
-//       console.error("Erro ao salvar livro: ", e);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const fetchLivros = async () => {
-//     try {
-//       const querySnapshot = await getDocs(collection(db, 'livros'));
-//       const livrosList = querySnapshot.docs.map(doc => ({
-//         ...doc.data(),
-//         id: doc.id
-//       }));
-//       setLivros(livrosList);
-//     } catch (e) {
-//       console.error("Erro ao buscar livros: ", e);
-//     }
-//   };
-
-//   const editarLivro = (livro) => {
-//     setTituloLivro(livro.titulo);
-//     setAutorLivro(livro.autor);
-//     setImageUri(livro.imageUrl);
-//     setEditingLivroId(livro.id);
-//   };
-
-//   const excluirLivro = async (livroId) => {
-//     try {
-//       await deleteDoc(doc(db, 'livros', livroId));
-//       alert('Livro excluído com sucesso!');
-//       fetchLivros();
-//     } catch (e) {
-//       console.error("Erro ao excluir livro: ", e);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchLivros();
-//   }, []);
-
-//   return (
-//     <ImageBackground
-//        source={require("./assets/fundo.jpg")}
-//       style={styles.container}
-//      >
-//     <View style={styles.container}>
-//       <Text style={styles.title}>Biblioteca Pessoal</Text>
-
-//       <Text style={styles.label}>Título do Livro</Text>
-//       <TextInput
-//         style={styles.input}
-//         placeholder="Digite o título do livro"
-//         value={tituloLivro}
-//         onChangeText={setTituloLivro}
-//       />
-
-//       <Text style={styles.label}>Autor do Livro</Text>
-//       <TextInput
-//         style={styles.input}
-//         placeholder="Digite o autor do livro"
-//         value={autorLivro}
-//         onChangeText={setAutorLivro}
-//       />
-
-//       <Button
-//         title="Selecionar Capa"
-//         onPress={selecionarImagem}
-//         color="#4682b4"
-//       />
-
-//       {imageUri && (
-//         <Image source={{ uri: imageUri }} style={styles.imagePreview} />
-//       )}
-
-//       <Button
-//         title={loading ? "Salvando..." : editingLivroId ? "Atualizar Livro" : "Adicionar Livro"}
-//         onPress={adicionarOuAtualizarLivro}
-//         color="#6b8e23"
-//       />
-
-//       <Text style={styles.sectionTitle}>Lista de Livros</Text>
-//       <FlatList
-//         data={livros}
-//         keyExtractor={(item) => item.id}
-//         renderItem={({ item }) => (
-//           <View style={styles.livroItem}>
-//             {item.imageUrl ? (
-//               <Image source={{ uri: item.imageUrl }} style={styles.livroImage} />
-//             ) : (
-//               <Icon name="book" size={50} color="#4682b4" style={styles.livroIcon} />
-//             )}
-//             <View style={styles.livroDetails}>
-//               <Text style={styles.livroTitle}>{item.titulo}</Text>
-//               <Text style={styles.livroAutor}>{item.autor}</Text>
-//             </View>
-//             <View style={styles.actionButtons}>
-//               <TouchableOpacity onPress={() => editarLivro(item)} style={styles.actionButton}>
-//                 <Icon name="edit" size={25} color="#4682b4" />
-//               </TouchableOpacity>
-//               <TouchableOpacity onPress={() => excluirLivro(item.id)} style={styles.actionButton}>
-//                 <Icon name="trash" size={25} color="#ff6347" />
-//               </TouchableOpacity>
-//             </View>
-//           </View>
-//         )}
-//         style={styles.livroList}
-//       />
-//     </View>
-//     </ImageBackground>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#f0f8ff',
-//     padding: 20,
-//   },
-//   title: {
-//     fontSize: 32,
-//     fontWeight: 'bold',
-//     color: '#4682b4',
-//     textAlign: 'center',
-//     marginBottom: 20,
-//   },
-//   label: {
-//     fontSize: 18,
-//     marginBottom: 5,
-//     color: '#333',
-//   },
-//   input: {
-//     width: '100%',
-//     padding: 10,
-//     marginBottom: 15,
-//     borderWidth: 1,
-//     borderColor: '#ccc',
-//     borderRadius: 5,
-//     backgroundColor: '#fff',
-//   },
-//   imagePreview: {
-//     width: '100%',
-//     height: 200,
-//     marginBottom: 15,
-//     borderRadius: 10,
-//   },
-//   sectionTitle: {
-//     fontSize: 24,
-//     fontWeight: 'bold',
-//     color: '#4682b4',
-//     marginTop: 20,
-//     marginBottom: 10,
-//   },
-//   livroList: {
-//     marginTop: 10,
-//   },
-//   livroItem: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     backgroundColor: '#fff',
-//     padding: 10,
-//     borderRadius: 5,
-//     marginBottom: 10,
-//     shadowColor: '#000',
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowOpacity: 0.2,
-//     shadowRadius: 2,
-//     elevation: 3,
-//   },
-//   livroIcon: {
-//     marginRight: 15,
-//   },
-//   livroImage: {
-//     width: 50,
-//     height: 50,
-//     borderRadius: 5,
-//     marginRight: 15,
-//   },
-//   livroDetails: {
-//     flex: 1,
-//   },
-//   livroTitle: {
-//     fontSize: 18,
-//     fontWeight: 'bold',
-//     color: '#333',
-//   },
-//   livroAutor: {
-//     fontSize: 16,
-//     color: '#555',
-//   },
-//   actionButtons: {
-//     flexDirection: 'row',
-//   },
-//   actionButton: {
-//     marginLeft: 10,
-//   },
-// });
