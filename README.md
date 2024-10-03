@@ -121,7 +121,7 @@ Este projeto é um aplicativo de gerenciamento de uma biblioteca pessoal, desenv
 
 ## Autores
 
-- [@octokatherine](https://www.github.com/Carla-coder)
+- [@Carla-coder](https://www.github.com/Carla-coder)
 
 Desenvolvido com ❤️ por Carla-coder.
 
